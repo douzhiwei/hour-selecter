@@ -24,11 +24,11 @@ Vue.use(hourSelect)
 |isEditable|Boolean| true|是否可以编辑|
 |timeval|String| 168位字符串|回填参数|
 
-## Event
+## 事件
 |Event|Output| Description |
 |:----|:-----|:------------|
 |res-change|String|已选择的小时  |
 
-## Result
+## 效果
 <img src="./src/img/demo.png" width = "624" height = "350" /> 
 
