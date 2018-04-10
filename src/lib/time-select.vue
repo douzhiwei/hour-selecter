@@ -248,6 +248,7 @@
           })
           if (selectIndex === -1) {
             this.oneDayArr.push(h)
+            this.oneDaySet.add(h)
           }
         }
       },
