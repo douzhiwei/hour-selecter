@@ -1,67 +1,68 @@
 <template>
-  <div>
-    <div class="time-select-ctrl">
-      <div class="choose-line">
-        <div class="example">
-          <div class="selected"><span class="selected-color select-color"></span><span>投放时间</span>
-          </div>
-          <div class="deselected">
-            <span class="deselected-color no-select-color"></span>
-            <span>暂停时间</span>
-          </div>
+    <div ref="div">
+        <div class="time-select-ctrl">
+            <div class="choose-line">
+                <div class="example">
+                    <div class="selected"><span class="selected-color select-color"></span><span>投放时间</span>
+                    </div>
+                    <div class="deselected">
+                        <span class="deselected-color no-select-color"></span>
+                        <span>暂停时间</span>
+                    </div>
+                </div>
+                <div class="choiceBtn" :class="{active: all}" @click="checkAll()">全部</div>
+                <div class="choiceBtn" :class="{active: weekday}" @click="checkWeek()">工作日</div>
+                <div class="choiceBtn" :class="{active: weekend}" @click="checkWeekend()">周末</div>
+                <div class="choiceBtn" @click="clear()">清除</div>
+            </div>
         </div>
-        <div class="choiceBtn" :class="{active: all}" @click="checkAll()">全部</div>
-        <div class="choiceBtn" :class="{active: weekday}" @click="checkWeek()">工作日</div>
-        <div class="choiceBtn" :class="{active: weekend}" @click="checkWeekend()">周末</div>
-        <div class="choiceBtn" @click="clear()">清除</div>
-      </div>
-    </div>
 
-    <div class="time-line-block">
-      <div class="hour-tips" v-for="tip in hoursEven" :key="tip">{{tip}}</div>
-    </div>
-
-    <div class="line-block">
-      <div class="left-block" v-for="(day, index) in days" :key="day.name">
-        <input type="checkbox" class="day-check" :value="index" v-model="oneDayArr" @click="selectOneDay(index)">
-        <span class="day-sp">{{day.name}}</span>
-      </div>
-
-    </div>
-    <div class="hour-con">
-      <div class="hour-row" v-for="(day, index1) in days.length">
-        <div class="hour-unit no-select-color"
-             v-for="(hour, index2) in hours.length-1"
-             :class="{'select-color': selected[index1][index2] == 0, 'no-select-color': selected[index1][index2] == 1}"
-             @click="selectHour(index1, index2)"
-             @mousedown.stop="frameSelect(index1, index2)"
-             @mousemove.stop="frameMove(index1, index2)"
-             @mouseup.stop="frameEnd(index1, index2)"
-        >
+        <div class="time-line-block">
+            <div class="hour-tips" v-for="tip in hoursEven" :key="tip">{{tip}}</div>
         </div>
-      </div>
 
-    </div>
+        <div class="line-block">
+            <div class="left-block" v-for="(day, index) in days" :key="day.name">
+                <input type="checkbox" class="day-check" :value="index" v-model="oneDayArr"
+                       @click="selectOneDay(index)">
+                <span class="day-sp">{{day.name}}</span>
+            </div>
 
-    <div class="tips">
-      <div class="left-block selected-days">已添加时间</div>
-      <div class="rightBlock">
-        <div class="line-block-noh" v-for="(week, index) in days" v-show="timeList[index]">
-          <div class="left-days-block">
-            <span>{{week.name}}</span>
-          </div>
-          <div class="tips-block">
-            <ul style="margin: 0;padding: 0">
-              <li v-for="tl in timeList[index]" ng-if="tl.length > 0">{{tl}}</li>
-            </ul>
-          </div>
         </div>
-      </div>
+        <div class="hour-con">
+            <div class="hour-row" v-for="(day, index1) in days.length">
+                <div class="hour-unit no-select-color"
+                     v-for="(hour, index2) in hours.length-1"
+                     :class="{'select-color': selected[index1][index2] == 0, 'no-select-color': selected[index1][index2] == 1}"
+                     @click="selectHour(index1, index2)"
+                     @mousedown.stop="frameSelect(index1, index2)"
+                     @mousemove.stop="touch ? frameMove(index1, index2):''"
+                     @mouseup.stop="frameEnd(index1, index2)"
+                >
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tips">
+            <div class="left-block selected-days">已添加时间</div>
+            <div class="rightBlock">
+                <div class="line-block-noh" v-for="(week, index) in days" v-show="timeList[index]&&timeList[index]!=0">
+                    <div class="left-days-block">
+                        <span>{{week.name}}</span>
+                    </div>
+                    <div class="tips-block">
+                        <ul style="margin: 0;padding: 0">
+                            <li v-for="tl in timeList[index]" ng-if="tl.length > 0">{{tl}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-html="htmlStr"></div>
+
     </div>
-
-    <div v-html="htmlStr"></div>
-
-  </div>
 </template>
 
 <script>
@@ -77,7 +78,14 @@
       isEditable: {
         type: Boolean,
         default: true
-      }
+      },
+      index: {
+        type: Number,
+      },
+      touch: {
+        type: Boolean,
+        default: true
+      },
     },
     data() {
       return {
@@ -140,15 +148,17 @@
 
       // 选择一天
       selectOneDay(index) {
-        this.$nextTick(() => {
-          let oneDayArrIndex = this.oneDayArr.findIndex((value, index1) => {
-            return value === index
-          })
-          if (oneDayArrIndex === -1) {
-            this.$set(this.selected, index, new Array(24).fill('1'))
-          }
+        // this.$nextTick(() => {
+        let oneDayArrIndex = this.oneDayArr.findIndex((value, index1) => {
+          return value === index
         })
-        this.$set(this.selected, index, new Array(24).fill('0'))
+        if (oneDayArrIndex === -1) {
+          this.$set(this.selected, index, new Array(24).fill('0'))
+        } else {
+          this.$set(this.selected, index, new Array(24).fill('1'))
+        }
+        // })
+
         this.timeListFunc(index)
       },
 
@@ -262,8 +272,11 @@
         let evt = window.event || arguments[0]
         this._startX = (evt.x || evt.clientX)
         this._startY = (evt.y || evt.clientY)
-        let left = this._startX - 3
-        let top = this._startY - 3
+        var box = this.$refs.div.getBoundingClientRect()
+        console.log(box)
+        let left = Math.abs(this._startX - box.left)
+        let top = Math.abs(this._startY - box.top)
+        console.log(left, top)
         this.htmlStr = ` <div style="position:absolute;
                                     left:${left}px;
                                     top:${top}px;
@@ -286,15 +299,13 @@
           return
         }
         let evt = window.event || arguments[0]
-
+        var box = this.$refs.div.getBoundingClientRect()
         let _x = (evt.x || evt.clientX)
         let _y = (evt.y || evt.clientY)
         let left = Math.min(_x, this._startX)
         let top = Math.min(_y, this._startY)
         let width = Math.abs(_x - this._startX) + 'px'
         let height = Math.abs(_y - this._startY) + 'px'
-        left = left - 3
-        top = top - 3
         this.htmlStr = ` <div  style="position:absolute;
                                     width:${width};
                                     height:${height};
@@ -345,8 +356,8 @@
     },
     watch: {
       res: function (n) {
-        console.error(n)
-        this.$emit('res-change', n)
+        let res = this.index >= 0 ? {n, index: this.index} : n
+        this.$emit('res-change', res)
       }
     },
     computed: {
@@ -360,202 +371,192 @@
         return evenList
       }
     },
-
     created() {
-      // 响应式
       this.selected = deepcopy(clearAll)
-      // for (let i = 0; i < this.selected.length; i++) {
-      //   this.selected[i] = new Array(1)
-      // }
-      // for (let i = 0; i < 24; i++) {
-      //   for (let j = 0; j < 7; j++) {
-      //     this.$set(this.selected, j, new Array(24).fill(0))
-      //   }
-      // }
     },
     mounted() {
-      // this.init()
+      this.init()
     }
   }
 </script>
 
 <style scoped rel="stylesheet/scss">
-  * {
-    margin: 0;
-    padding: 0;
-    font-size: 12px;
-  }
+    * {
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+    }
 
-  .active {
-    background-color: #6697e7 !important;
-  }
+    .active {
+        background-color: #6697e7 !important;
+    }
 
-  .no-select-color {
-    background-color: #d1d1d1;
-  }
+    .no-select-color {
+        background-color: #d1d1d1;
+    }
 
-  .select-color {
-    background-color: #8bc069
-  }
+    .select-color {
+        background-color: #8bc069
+    }
 
-  .hour-row {
-    margin-top: -4px
-  }
+    .hour-row {
+        margin-top: -4px
+    }
 
-  .choose-line {
-    padding: 6px;
-    margin-bottom: 6px;
-    width: 540px;
-    position: relative;
-  }
+    .choose-line {
+        padding: 6px;
+        margin-bottom: 6px;
+        width: 540px;
+        position: relative;
+    }
 
-  .hour-unit {
-    color: #666666;
-    width: 18px;
-    height: 18px;
-    display: inline-block;
-    margin: 0 1px 1px 0;
-    cursor: pointer;
-  }
+    .hour-unit {
+        color: #666666;
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        margin: 0 1px 1px 0;
+        cursor: pointer;
+    }
 
-  .hour-tips {
-    color: #666666;
-    width: 36px;
-    display: inline-block;
-    margin: 0 2px 2px 0;
-    overflow: hidden;
-    text-align: left;
-  }
+    .hour-tips {
+        color: #666666;
+        width: 36px;
+        display: inline-block;
+        margin: 0 2px 2px 0;
+        overflow: hidden;
+        text-align: left;
+    }
 
-  .info-unit {
-    color: #666666;
-    width: 50px;
-    height: 24px;
-    display: inline-block;
-    margin: 0 0 2px 0;
-    cursor: pointer;
-  }
+    .info-unit {
+        color: #666666;
+        width: 50px;
+        height: 24px;
+        display: inline-block;
+        margin: 0 0 2px 0;
+        cursor: pointer;
+    }
 
-  .day-check {
-    vertical-align: top;
-    margin-top: 5px;
-  }
+    .day-check {
+        vertical-align: top;
+        margin-top: 5px;
+    }
 
-  .line-block {
-    overflow: hidden;
-    float: left;
-  }
+    .line-block {
+        overflow: hidden;
+        float: left;
+    }
 
-  .time-line-block {
-    overflow: hidden;
-    padding-left: 54px;
-  }
+    .time-line-block {
+        overflow: hidden;
+        padding-left: 54px;
+    }
 
-  .line-block-noh {
-    overflow: hidden;
-    line-height: 20px;
-  }
+    .line-block-noh {
+        overflow: hidden;
+        line-height: 20px;
+    }
 
-  .left-block {
-    text-align: right;
-    width: 70px;
-    line-height: 18px;
-    color: #666666;
-    padding-right: 10px;
-    overflow: hidden;
-    vertical-align: top;
-  }
+    .left-block {
+        text-align: right;
+        width: 70px;
+        line-height: 18px;
+        color: #666666;
+        padding-right: 10px;
+        overflow: hidden;
+        vertical-align: top;
+    }
 
-  .selected-days {
-    line-height: 20px;
-    display: inline-block;
-  }
+    .selected-days {
+        line-height: 20px;
+        display: inline-block;
+    }
 
-  .left-days-block {
-    text-align: right;
-    color: #666666;
-    padding-right: 10px;
-    overflow: hidden;
-    display: inline-block;
-    vertical-align: top;
-  }
+    .left-days-block {
+        text-align: right;
+        color: #666666;
+        padding-right: 10px;
+        overflow: hidden;
+        display: inline-block;
+        vertical-align: top;
+    }
 
-  .rightBlock {
-    width: 620px;
-    display: inline-block;
-  }
+    .rightBlock {
+        width: 620px;
+        display: inline-block;
+    }
 
-  .choiceBtn {
-    background-color: #d1d1d1;
-    display: inline-block;
-    padding: 5px 12px;
-    margin-right: 10px;
-    color: #fff;
-    cursor: pointer;
-  }
+    .choiceBtn {
+        background-color: #d1d1d1;
+        display: inline-block;
+        padding: 5px 12px;
+        margin-right: 10px;
+        color: #fff;
+        cursor: pointer;
+    }
 
-  .day-sp {
-    display: inline-block;
-    color: #666666;
-  }
+    .day-sp {
+        display: inline-block;
+        color: #666666;
+    }
 
-  .example {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-  }
+    .example {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+    }
 
-  .example .selected .selected-color {
-    display: inline-block;
-    height: 20px;
-    width: 20px;
-    vertical-align: top;
-    margin-right: 6px;
-  }
+    .example .selected .selected-color {
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        vertical-align: top;
+        margin-right: 6px;
+    }
 
-  .example .selected, .example .deselected {
-    display: inline-block;
-    margin-left: 10px;
-  }
+    .example .selected, .example .deselected {
+        display: inline-block;
+        margin-left: 10px;
+    }
 
-  .example .deselected-color {
-    display: inline-block;
-    height: 20px;
-    width: 20px;
-    vertical-align: top;
-    margin-right: 6px;
-  }
+    .example .deselected-color {
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        vertical-align: top;
+        margin-right: 6px;
+    }
 
-  .tips {
-    width: 800px;
-    color: #666666;
-    margin-top: 8px;
-  }
+    .tips {
+        width: 800px;
+        color: #666666;
+        margin-top: 8px;
+    }
 
-  .tips-block {
-    width: 530px;
-    display: inline-block;
-  }
+    .tips-block {
+        width: 530px;
+        display: inline-block;
+    }
 
-  .tips-block ul li {
-    list-style: none;
-    display: inline-block;
-    width: 120px;
-    color: #666666;
-  }
+    .tips-block ul li {
+        list-style: none;
+        display: inline-block;
+        width: 120px;
+        color: #666666;
+    }
 
-  .time-select-ctrl {
-    width: 560px;
-    background-color: #f1f1f1;
-    padding-bottom: 5px;
-    -moz-user-select: none;
-    -khtml-user-select: none;
-    user-select: none;
-    position: relative;
-  }
+    .time-select-ctrl {
+        width: 560px;
+        background-color: #f1f1f1;
+        padding-bottom: 5px;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        user-select: none;
+        position: relative;
+    }
 
-  .select-frame {
-    border: 1px solid #898989;
-    position: fixed;
-  }
+    .select-frame {
+        border: 1px solid #898989;
+        position: fixed;
+    }
 </style>
