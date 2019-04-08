@@ -60,7 +60,7 @@
             </div>
         </div>
 
-        <div v-html="htmlStr"></div>
+        <!--<div v-html="htmlStr"></div>-->
 
     </div>
 </template>
@@ -553,6 +553,7 @@
         -khtml-user-select: none;
         user-select: none;
         position: relative;
+        line-height: 18px;
     }
 
     .select-frame {
