@@ -358,6 +358,8 @@
       res: function (n) {
         let res = this.index >= 0 ? {n, index: this.index} : n
         this.$emit('res-change', res)
+          // 添加v-model 支持
+        this.$emit('input', res)
       }
     },
     computed: {
