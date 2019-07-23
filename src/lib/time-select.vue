@@ -23,8 +23,8 @@
 
         <div class="line-block">
             <div class="left-block" v-for="(day, index) in days" :key="day.name">
-                <input type="checkbox" class="day-check" :value="index" v-model="oneDayArr"
-                       @click="selectOneDay(index)">
+                <input type="checkbox" :value="index" v-model="oneDayArr"
+                       @change="selectOneDay(index)">
                 <span class="day-sp">{{day.name}}</span>
             </div>
 
@@ -148,17 +148,12 @@
 
       // 选择一天
       selectOneDay(index) {
-        // this.$nextTick(() => {
-        let oneDayArrIndex = this.oneDayArr.findIndex((value, index1) => {
-          return value === index
-        })
+        let oneDayArrIndex = this.oneDayArr.indexOf(index)
         if (oneDayArrIndex === -1) {
-          this.$set(this.selected, index, new Array(24).fill('0'))
-        } else {
           this.$set(this.selected, index, new Array(24).fill('1'))
+        } else {
+          this.$set(this.selected, index, new Array(24).fill('0'))
         }
-        // })
-
         this.timeListFunc(index)
       },
 
@@ -438,12 +433,6 @@
         margin: 0 0 2px 0;
         cursor: pointer;
     }
-
-    .day-check {
-        vertical-align: top;
-        margin-top: 5px;
-    }
-
     .line-block {
         overflow: hidden;
         float: left;

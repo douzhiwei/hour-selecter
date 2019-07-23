@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App'
-import hourSelect from '../dist/time-select'
+import hourSelect from './lib/index'
 
 Vue.use(hourSelect)
 
