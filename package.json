@@ -1,13 +1,13 @@
 {
   "name": "hour-selecter",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "description": "hour-select",
   "author": "douzhiwei",
   "private": false,
   "license": "MIT",
   "keywords": "小时选择, hourSelect",
   "repository": "https://github.com/douzhiwei/hour-selecter",
-  "main": "src/lib/index.js",
+  "main": "dist/time-select.js",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",

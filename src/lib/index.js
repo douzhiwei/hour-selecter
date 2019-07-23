@@ -1,4 +1,4 @@
-import hourSelecter from './time-select'
+import hourSelecter from './time-select.vue'
 
 const hourSelect = {
     install: function (Vue) {
